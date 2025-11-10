@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Galaxia Limón y Sal</title>
+    <style>
+        /* --- Configuración General --- */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(ellipse at center, #1b2735 0%, #090a0f 100%);
+        }
+
+        /* --- Pantalla de Inicio (Splash Screen) --- */
+        #splash-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        #start-button {
+            font-size: 1.5rem;
+            padding: 15px 30px;
+            color: white;
+            background: #ff007f;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 20px #ff007f, 0 0 30px #ff007f;
+            transition: transform 0.2s ease;
+        }
+
+        #start-button:hover {
+            transform: scale(1.1);
+        }
+        
+        #splash-screen h2 {
+            color: white;
+            font-size: 2rem;
+            text-shadow: 0 0 10px #fff;
+        }
+
+        /* --- Contenido de la Galaxia --- */
+        #galaxy-content {
+            display: none;
+            flex-direction: column; /* Para centrar verticalmente */
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            position: relative; /* Para posicionar las letras */
+        }
+
+        /* --- MENSAJE PRINCIPAL (Centro de la Galaxia) --- */
+        .heart-container {
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        .heart {
+            font-size: 8rem; /* Más grande aún */
+            line-height: 1;
+            color: #ff007f; /* Corazón Rosa/Púrpura */
+            /* La animación de pulso debe estar sincronizada con el beat */
+            animation: pulse-beat 1.5s infinite ease-in-out; 
+        }
+
+        .main-message {
+            font-size: 3rem;
+            color: #ffffff;
+            font-family: 'cursive', sans-serif;
+            margin-top: -15px;
+             /* Efecto de neón */
+            text-shadow:
+                0 0 7px #fff,
+                0 0 10px #fff,
+                0 0 21px #fff,
+                0 0 42px #bc13fe;
+        }
+        
+        /* --- LÍNEAS DE LA CANCIÓN (Al Fondo) --- */
+        #lyrics-display {
+            position: absolute;
+            bottom: 20%; /* Un poco más arriba que el fondo */
+            width: 80%;
+            text-align: center;
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            font-style: italic;
+            opacity: 0; /* Empieza oculto */
+            transition: opacity 0.5s ease-in-out; /* Transición suave */
+            text-shadow: 0 0 5px #ff007f; /* Un pequeño brillo rosa */
+        }
+        
+        /* --- ANIMACIONES --- */
+        @keyframes pulse-beat {
+            0% { transform: scale(1); filter: drop-shadow(0 0 10px #ff007f); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px #ff007f); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 10px #ff007f); }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="miMusica" loop>
+        <source src="limon-y-sal.mp3" type="audio/mpeg">
+        Tu navegador no soporta el audio.
+    </audio>
+
+    <div id="splash-screen">
+        <h2>💖 Limón y Sal para tu Galaxia 💖</h2>
+        <button id="start-button">Clic para empezar</button>
+    </div>
+
+    <div id="galaxy-content">
+        
+        <div class="heart-container">
+            <div class="heart">❤️</div>
+            <div class="main-message">Te Amo Edith</div>
+        </div>
+
+        <div id="lyrics-display"></div>
+    </div>
+
+
+    <script>
+        // 1. OBTENER ELEMENTOS
+        const startButton = document.getElementById('start-button');
+        const splashScreen = document.getElementById('splash-screen');
+        const galaxyContent = document.getElementById('galaxy-content');
+        const miMusica = document.getElementById('miMusica');
+        const lyricsDisplay = document.getElementById('lyrics-display');
+
+        // 2. LETRAS Y TIEMPOS (en segundos desde el inicio de la canción)
+        // He calculado estos tiempos para el inicio de "Limón y Sal".
+        const lyricsTimeStamps = [
+            // El inicio del verso de "tengo que confesar..." es aproximadamente a los 11.5 segundos
+            { time: 11.5, text: "Tengo que confesar a veces," },
+            { time: 14.0, text: "no me gusta tu forma de ser." },
+            
+            // Continúa con la canción...
+            { time: 17.5, text: "Pero es que de repente," },
+            { time: 20.0, text: "sales con algo tan dulce..." },
+            { time: 22.0, text: "como pan con..." },
+            { time: 24.5, text: "Limón y Sal." } // El final del coro es a los ~24.5s
+            
+            // Si quieres añadir más, sigue el patrón:
+            // { time: 28.0, text: "otra frase de la canción" }
+        ];
+
+        let currentLyricIndex = 0;
+
+        // 3. FUNCIÓN PARA MOSTRAR LAS LETRAS
+        function showLyric(text) {
+            lyricsDisplay.style.opacity = '0'; // Oculta la línea actual
+            
+            // Pequeño retraso para que la transición sea suave
+            setTimeout(() => {
+                lyricsDisplay.textContent = text;
+                lyricsDisplay.style.opacity = '1'; // Muestra la nueva línea
+            }, 500); // 0.5 segundos de transición
+        }
+
+        // 4. FUNCIÓN QUE SINCRONIZA EL AUDIO
+        function checkLyrics() {
+            // Revisa si hay más frases por mostrar
+            if (currentLyricIndex < lyricsTimeStamps.length) {
+                const current = lyricsTimeStamps[currentLyricIndex];
+                
+                // Si el tiempo actual del audio es mayor o igual al tiempo de la frase...
+                if (miMusica.currentTime >= current.time) {
+                    showLyric(current.text);
+                    currentLyricIndex++; // Pasa a la siguiente frase
+                }
+            } else {
+                // Si ya se mostraron todas las frases, oculta el área de las letras
+                lyricsDisplay.style.opacity = '0';
+            }
+        }
+
+        // 5. FUNCIÓN PRINCIPAL AL HACER CLIC
+        function empezarMagia() {
+            // Oculta la pantalla de inicio
+            splashScreen.style.display = 'none';
+            
+            // Muestra el contenido de la galaxia y activa el centrado
+            galaxyContent.style.display = 'flex'; 
+            
+            // Inicia la música
+            miMusica.play().catch(error => {
+                console.log("El navegador impidió el 'play'. Asegúrate de que el usuario hizo clic.");
+            });
+
+            // Llama a la función checkLyrics cada 100 milisegundos para revisar el tiempo.
+            setInterval(checkLyrics, 100); 
+        }
+
+        // 6. EVENTO DEL BOTÓN
+        startButton.addEventListener('click', empezarMagia);
+    </script>
+
+</body>
+</html>
